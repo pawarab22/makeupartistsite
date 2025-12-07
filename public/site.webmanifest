@@ -1,0 +1,17 @@
+{
+  "name": "Pooja's Aura Artistry",
+  "short_name": "PAA",
+  "description": "Professional makeup artistry for bridal, party, and special occasions",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#f093fb",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}
+
