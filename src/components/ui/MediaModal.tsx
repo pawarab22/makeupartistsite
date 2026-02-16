@@ -28,7 +28,7 @@ export default function MediaModal({ item, isOpen, onClose }: MediaModalProps) {
         videoRef.current.currentTime = 0;
       }
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
       if (videoRef.current) {
@@ -59,7 +59,7 @@ export default function MediaModal({ item, isOpen, onClose }: MediaModalProps) {
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 md:p-6"
       onClick={onClose}
-      style={{ 
+      style={{
         background: 'rgba(0, 0, 0, 0.75)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
@@ -76,7 +76,7 @@ export default function MediaModal({ item, isOpen, onClose }: MediaModalProps) {
       <div
         className="relative w-full max-w-4xl max-h-[90vh] sm:max-h-[85vh] md:max-h-[80vh] bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20 flex flex-col"
         onClick={(e) => e.stopPropagation()}
-        style={{ 
+        style={{
           animation: 'scaleIn 0.3s ease-out',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1)'
         }}
@@ -103,6 +103,21 @@ export default function MediaModal({ item, isOpen, onClose }: MediaModalProps) {
                   target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23f3f4f6" width="400" height="300"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="18" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not available%3C/text%3E%3C/svg%3E';
                 }}
               />
+            ) : item.mediaUrl.includes('instagram.com') || item.mediaUrl.includes('youtube.com') || item.mediaUrl.includes('youtu.be') ? (
+              <div className="w-full aspect-video min-h-[300px] sm:min-h-[400px] md:min-h-[500px]">
+                <iframe
+                  src={
+                    item.mediaUrl.includes('instagram.com')
+                      ? `${item.mediaUrl}${item.mediaUrl.endsWith('/') ? '' : '/'}embed`
+                      : item.mediaUrl.includes('youtube.com')
+                        ? item.mediaUrl.replace('watch?v=', 'embed/')
+                        : item.mediaUrl.replace('youtu.be/', 'youtube.com/embed/')
+                  }
+                  className="w-full h-full rounded-xl border-none"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
             ) : (
               <video
                 ref={videoRef}

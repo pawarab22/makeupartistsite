@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import Card from '../ui/Card';
 import { Star } from 'lucide-react';
 import { getFeedbacks } from '../../lib/localDb';
@@ -24,10 +25,18 @@ const staticTestimonials = [
 ];
 
 export default function TestimonialsSection() {
-  const storedFeedbacks = getFeedbacks();
-  const recentFeedbacks = storedFeedbacks.slice(-3).reverse();
+  const [recentFeedbacks, setRecentFeedbacks] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const storedFeedbacks = await getFeedbacks();
+      setRecentFeedbacks(storedFeedbacks.slice(-3).reverse());
+    };
+    loadData();
+  }, []);
+
   const allTestimonials = [...staticTestimonials, ...recentFeedbacks].slice(0, 4);
-  
+
   return (
     <section className="py-20 bg-gradient-to-b from-soft-blush to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,7 +46,7 @@ export default function TestimonialsSection() {
             Real experiences from our beautiful clients
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {allTestimonials.map((testimonial, index) => (
             <Card key={index} hover>

@@ -2,7 +2,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Tag from '../components/ui/Tag';
 import { Link } from 'react-router-dom';
-import { Sparkles, PartyPopper, Camera, Heart, Users, Baby } from 'lucide-react';
+import { Sparkles, PartyPopper, Camera, Heart, Users, Baby, ArrowLeft } from 'lucide-react';
 
 const services = [
   {
@@ -67,6 +67,13 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rose-50/30 to-soft-blush py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="inline-flex items-center text-rose-accent hover:text-rose-600 font-medium mb-6 group transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </Link>
         <div className="text-center mb-8 sm:mb-12 animate-fade-in">
           <span className="inline-block px-4 py-2 bg-gradient-to-r from-rose-accent to-rose-pink text-white rounded-full text-sm font-semibold mb-4 shadow-md">
             What We Offer
@@ -78,7 +85,7 @@ export default function ServicesPage() {
             Professional makeup artistry tailored to your occasion and style
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {services.map((service, index) => (
             <Card key={index} hover className="flex flex-col">
@@ -114,14 +121,14 @@ export default function ServicesPage() {
             </Card>
           ))}
         </div>
-        
+
         <div className="mt-12 text-center">
           <Card className="bg-gradient-to-r from-pink-50 to-rose-50 border-2 border-rose-200">
             <h3 className="text-2xl font-bold text-deep-plum mb-4 drop-shadow-sm">
               Custom Packages Available
             </h3>
             <p className="text-gray-800 mb-4 font-medium">
-              Need a custom package for multiple events or special requirements? 
+              Need a custom package for multiple events or special requirements?
               Contact us to create a personalized quote just for you.
             </p>
             <div className="bg-white/60 rounded-lg p-4 mb-6 border border-rose-200/50">
@@ -129,8 +136,8 @@ export default function ServicesPage() {
                 💝 Our Priority: Your Satisfaction!
               </p>
               <p className="text-sm text-gray-700">
-                We believe in making you happy and satisfied. Our prices are affordable and negotiable 
-                because your happiness matters most to us. Let's work together to create the perfect look 
+                We believe in making you happy and satisfied. Our prices are affordable and negotiable
+                because your happiness matters most to us. Let's work together to create the perfect look
                 within your budget!
               </p>
             </div>

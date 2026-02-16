@@ -1,10 +1,18 @@
+import { Link } from 'react-router-dom';
 import Card from '../components/ui/Card';
-import { Award, Sparkles, MapPin, Heart } from 'lucide-react';
+import { Award, Sparkles, MapPin, Heart, ArrowLeft } from 'lucide-react';
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rose-50/30 to-soft-blush py-8 sm:py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="inline-flex items-center text-rose-accent hover:text-rose-600 font-medium mb-6 group transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </Link>
         <div className="text-center mb-8 sm:mb-12 animate-fade-in">
           <span className="inline-block px-4 py-2 bg-gradient-to-r from-rose-accent to-rose-pink text-white rounded-full text-sm font-semibold mb-4 shadow-md">
             About Us
@@ -14,7 +22,7 @@ export default function AboutPage() {
             Your trusted makeup artist for life's most beautiful moments
           </p>
         </div>
-        
+
         {/* Profile Section */}
         <Card className="mb-12">
           <div className="flex flex-col md:flex-row gap-8">
@@ -28,15 +36,15 @@ export default function AboutPage() {
             <div className="flex-1">
               <h2 className="text-2xl sm:text-3xl font-bold text-deep-plum mb-4 drop-shadow-sm">Pooja's Story</h2>
               <p className="text-gray-800 mb-4 leading-relaxed font-medium">
-                As a certified makeup artist with 6 months of dedicated experience in the beauty industry, 
-                Pooja has been passionate about helping women look and feel their absolute best on their 
-                most important days. Specializing in bridal makeup, party glam, and editorial looks, 
+                As a certified makeup artist with 6 months of dedicated experience in the beauty industry,
+                Pooja has been passionate about helping women look and feel their absolute best on their
+                most important days. Specializing in bridal makeup, party glam, and editorial looks,
                 she combines technical expertise with an artistic eye to create stunning transformations.
               </p>
               <p className="text-gray-800 mb-4 leading-relaxed font-medium">
-                Pooja believes that makeup is more than just cosmetics—it's a way to enhance your 
-                natural beauty and express your unique aura. Her approach is personalized, ensuring 
-                each client receives a look that's perfectly tailored to their features, skin tone, 
+                Pooja believes that makeup is more than just cosmetics—it's a way to enhance your
+                natural beauty and express your unique aura. Her approach is personalized, ensuring
+                each client receives a look that's perfectly tailored to their features, skin tone,
                 and personal style.
               </p>
               <div className="grid grid-cols-2 gap-4 mt-6">
@@ -52,7 +60,7 @@ export default function AboutPage() {
             </div>
           </div>
         </Card>
-        
+
         {/* Specialties */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-deep-plum mb-6 text-center drop-shadow-sm" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Specialties</h2>
@@ -83,7 +91,7 @@ export default function AboutPage() {
             </Card>
           </div>
         </div>
-        
+
         {/* Why Choose */}
         <div>
           <h2 className="text-3xl font-bold text-deep-plum mb-6 text-center drop-shadow-sm" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
@@ -98,14 +106,14 @@ export default function AboutPage() {
                 <div>
                   <h3 className="font-bold text-deep-plum mb-2 drop-shadow-sm">🏅 Certified Makeup Artist</h3>
                   <p className="text-gray-700 text-sm font-medium">
-                    Pooja is a certified makeup artist with professional certification and continuous 
-                    training in latest techniques and trends. Her dedication to learning and perfecting 
+                    Pooja is a certified makeup artist with professional certification and continuous
+                    training in latest techniques and trends. Her dedication to learning and perfecting
                     her craft ensures you receive the best service.
                   </p>
                 </div>
               </div>
             </Card>
-            
+
             <Card hover>
               <div className="flex items-start gap-4">
                 <div className="text-rose-accent flex-shrink-0">
@@ -119,7 +127,7 @@ export default function AboutPage() {
                 </div>
               </div>
             </Card>
-            
+
             <Card hover>
               <div className="flex items-start gap-4">
                 <div className="text-rose-accent flex-shrink-0">
@@ -133,7 +141,7 @@ export default function AboutPage() {
                 </div>
               </div>
             </Card>
-            
+
             <Card hover>
               <div className="flex items-start gap-4">
                 <div className="text-rose-accent flex-shrink-0">
@@ -142,13 +150,13 @@ export default function AboutPage() {
                 <div>
                   <h3 className="font-bold text-deep-plum mb-2 drop-shadow-sm">💝 Affordable & Customer-Focused</h3>
                   <p className="text-gray-700 text-sm font-medium">
-                    Your satisfaction is our top priority! We offer affordable, negotiable prices 
+                    Your satisfaction is our top priority! We offer affordable, negotiable prices
                     because we want happy, satisfied customers above all else.
                   </p>
                 </div>
               </div>
             </Card>
-            
+
             <Card hover>
               <div className="flex items-start gap-4">
                 <div className="text-rose-accent flex-shrink-0">

@@ -9,6 +9,8 @@ import { getFeedbacks } from '../lib/localDb';
 import { Enquiry } from '../types/enquiry';
 import { Feedback } from '../types/feedback';
 import { Star, Image, MessageSquare, ChevronUp, Trash2, Edit2 } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { sendEnquiryReplyEmail } from '../lib/emailService';
 
 export default function AdminDashboardPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -17,22 +19,47 @@ export default function AdminDashboardPage() {
   const [expandedFeedbacks, setExpandedFeedbacks] = useState<Set<string>>(new Set());
   const [enquiryReplies, setEnquiryReplies] = useState<Record<string, string>>({});
   const [feedbackReplies, setFeedbackReplies] = useState<Record<string, string>>({});
-  
+
   useEffect(() => {
     loadData();
   }, []);
-  
-  const loadData = () => {
-    setEnquiries(getEnquiries());
-    setFeedbacks(getFeedbacks());
+
+  const loadData = async () => {
+    const [enquiriesData, feedbackData] = await Promise.all([
+      getEnquiries(),
+      getFeedbacks()
+    ]);
+    setEnquiries(enquiriesData);
+    setFeedbacks(feedbackData);
   };
-  
-  const portfolioItems = getPortfolioItems();
-  
-  const handleToggleStatus = (id: string, currentStatus: 'PENDING' | 'CONTACTED') => {
+
+  const [portfolioItemsCount, setPortfolioItemsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPortfolioItems = async () => {
+      const items = await getPortfolioItems();
+      setPortfolioItemsCount(items.length);
+    };
+    fetchPortfolioItems();
+  }, []);
+
+  const handleToggleStatus = async (id: string, currentStatus: 'PENDING' | 'CONTACTED') => {
     const newStatus = currentStatus === 'PENDING' ? 'CONTACTED' : 'PENDING';
-    updateEnquiryStatus(id, newStatus);
+    await updateEnquiryStatus(id, newStatus);
     loadData();
+
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+    });
+
+    Toast.fire({
+      icon: 'success',
+      title: `Status updated to ${newStatus}`
+    });
   };
 
   const toggleEnquiryExpanded = (id: string) => {
@@ -70,54 +97,143 @@ export default function AdminDashboardPage() {
   };
 
 
-  const handleFeedbackReply = (id: string) => {
+  const handleFeedbackReply = async (id: string) => {
     const reply = feedbackReplies[id]?.trim();
     if (!reply) {
-      alert('Please enter a reply');
+      Swal.fire('Required', 'Please enter a reply', 'warning');
       return;
     }
     const feedback = feedbacks.find(f => f.id === id);
     if (feedback?.adminReply) {
-      updateFeedbackReply(id, reply);
+      await updateFeedbackReply(id, reply);
     } else {
-      addFeedbackReply(id, reply);
+      await addFeedbackReply(id, reply);
     }
+    Swal.fire({
+      icon: 'success',
+      title: 'Reply Saved',
+      timer: 1500,
+      showConfirmButton: false,
+      background: '#FFF5F7',
+      color: '#4A0E2E',
+      iconColor: '#E11D48'
+    });
     setFeedbackReplies({ ...feedbackReplies, [id]: '' });
     loadData();
   };
 
-  const handleEnquiryReplyUpdate = (id: string) => {
+  const handleEnquiryReplyUpdate = async (id: string) => {
     const reply = enquiryReplies[id]?.trim();
     if (!reply) {
-      alert('Please enter a reply');
+      Swal.fire('Required', 'Please enter a reply', 'warning');
       return;
     }
-    const enquiry = enquiries.find(e => e.id === id);
-    if (enquiry?.adminReply) {
-      updateEnquiryReply(id, reply);
-    } else {
-      addEnquiryReply(id, reply);
-    }
-    setEnquiryReplies({ ...enquiryReplies, [id]: '' });
-    loadData();
-  };
 
-  const handleDeleteEnquiryReply = (id: string) => {
-    if (confirm('Are you sure you want to delete this reply?')) {
-      deleteEnquiryReply(id);
+    const enquiry = enquiries.find(e => e.id === id);
+    if (!enquiry) return;
+
+    // Show loading state
+    Swal.fire({
+      title: 'Sending Reply...',
+      text: 'Please wait while we save your response and notify the client.',
+      allowOutsideClick: false,
+      background: '#FFF5F7',
+      color: '#4A0E2E',
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    try {
+      if (enquiry.adminReply) {
+        await updateEnquiryReply(id, reply);
+      } else {
+        await addEnquiryReply(id, reply);
+      }
+
+      // Send Email Notification
+      if (enquiry.email) {
+        await sendEnquiryReplyEmail({
+          to_name: enquiry.name,
+          to_email: enquiry.email,
+          occasion: enquiry.occasionType,
+          original_message: enquiry.message || 'No message provided',
+          admin_reply: reply,
+          site_url: window.location.origin
+        });
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Reply Saved!',
+        text: 'A Gmail draft has been opened. Please click "Send" in the new window to complete.',
+        confirmButtonColor: '#E11D48',
+        background: '#FFF5F7',
+        color: '#4A0E2E',
+        iconColor: '#E11D48'
+      });
+
       setEnquiryReplies({ ...enquiryReplies, [id]: '' });
       loadData();
+    } catch (error) {
+      console.error('Error in handling reply:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to send reply. Please try again.',
+        confirmButtonColor: '#E11D48'
+      });
     }
   };
 
-  const handleDeleteFeedbackReply = (id: string) => {
-    if (confirm('Are you sure you want to delete this reply?')) {
-      deleteFeedbackReply(id);
-      setFeedbackReplies({ ...feedbackReplies, [id]: '' });
+  const handleDeleteEnquiryReply = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Delete Reply?',
+      text: "This action cannot be undone!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#E11D48',
+      cancelButtonColor: '#9CA3AF',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      await deleteEnquiryReply(id);
+      setEnquiryReplies({ ...enquiryReplies, [id]: '' });
       loadData();
+      Swal.fire({
+        title: 'Deleted!',
+        icon: 'success',
+        timer: 1000,
+        showConfirmButton: false
+      });
     }
   };
-  
+
+  const handleDeleteFeedbackReply = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Delete Reply?',
+      text: "This action cannot be undone!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#E11D48',
+      cancelButtonColor: '#9CA3AF',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      await deleteFeedbackReply(id);
+      setFeedbackReplies({ ...feedbackReplies, [id]: '' });
+      loadData();
+      Swal.fire({
+        title: 'Deleted!',
+        icon: 'success',
+        timer: 1000,
+        showConfirmButton: false
+      });
+    }
+  };
+
   const totalEnquiries = enquiries.length;
   const todayEnquiries = enquiries.filter(e => {
     const today = new Date().toDateString();
@@ -127,7 +243,7 @@ export default function AdminDashboardPage() {
   const avgRating = feedbacks.length > 0
     ? (feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length).toFixed(1)
     : '0';
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-soft-blush py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -135,7 +251,7 @@ export default function AdminDashboardPage() {
           <h1 className="text-3xl sm:text-4xl font-bold text-deep-plum mb-2">Admin Dashboard</h1>
           <p className="text-sm sm:text-base text-gray-600">Manage enquiries, feedback, and portfolio</p>
         </div>
-        
+
         {/* Quick Actions */}
         <div className="mb-6">
           <Link to="/admin/portfolio">
@@ -145,7 +261,7 @@ export default function AdminDashboardPage() {
             </Button>
           </Link>
         </div>
-        
+
         {/* Summary Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card>
@@ -165,7 +281,7 @@ export default function AdminDashboardPage() {
             <p className="text-2xl sm:text-3xl font-bold text-deep-plum">{avgRating} ⭐</p>
           </Card>
         </div>
-        
+
         {/* Portfolio Summary */}
         <div className="mb-12">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -177,7 +293,7 @@ export default function AdminDashboardPage() {
           <Card>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-3xl font-bold text-deep-plum">{portfolioItems.length}</p>
+                <p className="text-3xl font-bold text-deep-plum">{portfolioItemsCount}</p>
                 <p className="text-sm text-gray-600">Total Portfolio Items</p>
               </div>
               <div className="text-rose-accent">
@@ -186,7 +302,7 @@ export default function AdminDashboardPage() {
             </div>
           </Card>
         </div>
-        
+
         {/* Enquiries Table */}
         <div className="mb-8 sm:mb-12">
           <h2 className="text-xl sm:text-2xl font-bold text-deep-plum mb-4">Enquiries</h2>
@@ -353,7 +469,7 @@ export default function AdminDashboardPage() {
             </div>
           )}
         </div>
-        
+
         {/* Feedback List */}
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-deep-plum mb-4">Feedback</h2>
@@ -482,7 +598,7 @@ export default function AdminDashboardPage() {
           )}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
 

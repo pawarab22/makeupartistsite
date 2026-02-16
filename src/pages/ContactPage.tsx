@@ -1,42 +1,76 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
 import Button from '../components/ui/Button';
-import { Phone, Mail, MessageCircle, Instagram, MapPin } from 'lucide-react';
+import { Phone, Mail, MessageCircle, Instagram, MapPin, ArrowLeft } from 'lucide-react';
 import { saveEnquiry } from '../lib/localDb';
+import Swal from 'sweetalert2';
 
 export default function ContactPage() {
   const [quickForm, setQuickForm] = useState({
     name: '',
     phone: '',
+    email: '',
+    eventDate: new Date().toISOString().split('T')[0], // Default to today
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
-  
-  const handleQuickSubmit = (e: React.FormEvent) => {
+
+  const handleQuickSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!quickForm.name || !quickForm.phone) return;
-    
-    saveEnquiry({
-      name: quickForm.name,
-      phone: quickForm.phone,
-      email: '',
-      occasionType: 'Quick Contact',
-      eventDate: '',
-      location: '',
-      message: quickForm.message,
-    });
-    
-    setSubmitted(true);
-    setQuickForm({ name: '', phone: '', message: '' });
-    setTimeout(() => setSubmitted(false), 5000);
+
+    if (!quickForm.name || !quickForm.phone || !quickForm.email) {
+      Swal.fire('Required', 'Please fill in Name, Phone, and Email', 'warning');
+      return;
+    }
+
+    try {
+      await saveEnquiry({
+        name: quickForm.name,
+        phone: quickForm.phone,
+        email: quickForm.email,
+        occasionType: 'Quick Contact',
+        eventDate: quickForm.eventDate,
+        location: 'Quick Contact',
+        message: quickForm.message,
+      });
+
+      setSubmitted(true);
+      Swal.fire({
+        icon: 'success',
+        title: 'Message Sent!',
+        text: "Thanks for reaching out. We'll contact you shortly.",
+        timer: 2500,
+        showConfirmButton: false,
+        background: '#FFF5F7',
+        color: '#4A0E2E',
+        iconColor: '#E11D48'
+      });
+      setQuickForm({
+        name: '',
+        phone: '',
+        email: '',
+        eventDate: new Date().toISOString().split('T')[0],
+        message: ''
+      });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (error) {
+      Swal.fire('Error', 'Failed to send message. Please try again.', 'error');
+    }
   };
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-rose-50/30 to-soft-blush py-8 sm:py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Link
+          to="/"
+          className="inline-flex items-center text-rose-accent hover:text-rose-600 font-medium mb-6 group transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          Back to Home
+        </Link>
         <div className="text-center mb-8 sm:mb-12 animate-fade-in">
           <span className="inline-block px-4 py-2 bg-gradient-to-r from-rose-accent to-rose-pink text-white rounded-full text-sm font-semibold mb-4 shadow-md">
             Contact Us
@@ -46,7 +80,7 @@ export default function ContactPage() {
             We'd love to hear from you. Reach out through any of these channels
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Contact Information */}
           <div className="space-y-6">
@@ -63,7 +97,7 @@ export default function ContactPage() {
                 </div>
               </div>
             </Card>
-            
+
             <Card>
               <div className="flex items-start gap-4 mb-4">
                 <div className="text-rose-accent flex-shrink-0">
@@ -82,7 +116,7 @@ export default function ContactPage() {
                 </div>
               </div>
             </Card>
-            
+
             <Card>
               <div className="flex items-start gap-4 mb-4">
                 <div className="text-rose-accent flex-shrink-0">
@@ -96,7 +130,7 @@ export default function ContactPage() {
                 </div>
               </div>
             </Card>
-            
+
             <Card>
               <div className="flex items-start gap-4 mb-4">
                 <div className="text-rose-accent flex-shrink-0">
@@ -115,7 +149,7 @@ export default function ContactPage() {
                 </div>
               </div>
             </Card>
-            
+
             <Card>
               <div className="flex items-start gap-4">
                 <div className="text-rose-accent flex-shrink-0">
@@ -143,11 +177,11 @@ export default function ContactPage() {
               </div>
             </Card>
           </div>
-          
+
           {/* Quick Enquiry Form */}
           <Card>
             <h2 className="text-2xl font-bold text-deep-plum mb-6">Quick Enquiry</h2>
-            
+
             {submitted && (
               <div className="mb-4 p-3 bg-green-50 border-2 border-green-200 rounded-lg">
                 <p className="text-green-800 text-sm font-semibold">
@@ -155,19 +189,38 @@ export default function ContactPage() {
                 </p>
               </div>
             )}
-            
+
             <form onSubmit={handleQuickSubmit} className="space-y-4">
               <Input
                 label="Name *"
                 value={quickForm.name}
                 onChange={(e) => setQuickForm({ ...quickForm, name: e.target.value })}
+                placeholder="Ex: Priyanka Chopra"
                 required
               />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Phone *"
+                  type="tel"
+                  value={quickForm.phone}
+                  onChange={(e) => setQuickForm({ ...quickForm, phone: e.target.value })}
+                  placeholder="Ex: 9876543210"
+                  required
+                />
+                <Input
+                  label="Email *"
+                  type="email"
+                  value={quickForm.email}
+                  onChange={(e) => setQuickForm({ ...quickForm, email: e.target.value })}
+                  placeholder="Ex: user@gmail.com"
+                  required
+                />
+              </div>
               <Input
-                label="Phone *"
-                type="tel"
-                value={quickForm.phone}
-                onChange={(e) => setQuickForm({ ...quickForm, phone: e.target.value })}
+                label="Best Time to Connect (Event Date) *"
+                type="date"
+                value={quickForm.eventDate}
+                onChange={(e) => setQuickForm({ ...quickForm, eventDate: e.target.value })}
                 required
               />
               <Textarea
@@ -175,7 +228,7 @@ export default function ContactPage() {
                 rows={4}
                 value={quickForm.message}
                 onChange={(e) => setQuickForm({ ...quickForm, message: e.target.value })}
-                placeholder="Tell us how we can help..."
+                placeholder="I am interested in Bridal makeup for Satara location..."
               />
               <Button type="submit" className="w-full">
                 Send Quick Enquiry
@@ -187,4 +240,3 @@ export default function ContactPage() {
     </div>
   );
 }
-

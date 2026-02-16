@@ -16,10 +16,10 @@ export default function FeaturedLooks() {
   const [featuredItems, setFeaturedItems] = useState<PortfolioItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const loadFeaturedItems = () => {
+
+  const loadFeaturedItems = async () => {
     try {
-      const storedItems = getPortfolioItems();
+      const storedItems = await getPortfolioItems();
       // Show latest 6 items from storage (newest first)
       if (storedItems.length > 0) {
         // Sort by creation date (newest first) and take latest 6
@@ -42,25 +42,25 @@ export default function FeaturedLooks() {
       setFeaturedItems([]);
     }
   };
-  
+
   useEffect(() => {
     loadFeaturedItems();
-    
+
     // Refresh when page becomes visible (user switches tabs/windows)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         loadFeaturedItems();
       }
     };
-    
+
     // Refresh on focus
     const handleFocus = () => {
       loadFeaturedItems();
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
@@ -86,7 +86,7 @@ export default function FeaturedLooks() {
             Explore our portfolio of stunning transformations
           </p>
         </div>
-        
+
         {featuredItems.length === 0 ? (
           <Card className="text-center py-12">
             <p className="text-gray-600 text-lg mb-4">Portfolio coming soon!</p>
@@ -96,9 +96,9 @@ export default function FeaturedLooks() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {featuredItems.map((look) => (
-                <Card 
-                  key={look.id} 
-                  hover 
+                <Card
+                  key={look.id}
+                  hover
                   className="p-0 overflow-hidden cursor-pointer"
                   onClick={() => handleItemClick(look)}
                 >
@@ -113,6 +113,16 @@ export default function FeaturedLooks() {
                           target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="300"%3E%3Crect fill="%23f3f4f6" width="400" height="300"/%3E%3Ctext fill="%239ca3af" font-family="sans-serif" font-size="18" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EImage not available%3C/text%3E%3C/svg%3E';
                         }}
                       />
+                    ) : look.mediaUrl.includes('instagram.com') || look.mediaUrl.includes('youtube.com') || look.mediaUrl.includes('youtu.be') ? (
+                      <div className="w-full h-full bg-gradient-to-br from-deep-plum to-rose-900 flex flex-col items-center justify-center p-6 text-center">
+                        <div className="bg-white/90 rounded-full p-4 shadow-xl mb-4 transform group-hover:scale-110 transition-all duration-300">
+                          <Play className="w-8 h-8 text-rose-accent fill-rose-accent ml-1" />
+                        </div>
+                        <span className="text-white font-bold text-base drop-shadow-md">
+                          Watch on {look.mediaUrl.includes('instagram.com') ? 'Instagram' : 'YouTube'}
+                        </span>
+                        <p className="text-white/80 text-[10px] mt-1 font-medium">Click to open full video</p>
+                      </div>
                     ) : (
                       <>
                         <video
@@ -152,7 +162,7 @@ export default function FeaturedLooks() {
                 </Card>
               ))}
             </div>
-            
+
             <div className="text-center mt-10">
               <Link to="/portfolio" className="text-rose-accent font-semibold hover:underline">
                 View Full Portfolio →
@@ -161,7 +171,7 @@ export default function FeaturedLooks() {
           </>
         )}
       </div>
-      
+
       {/* Media Modal */}
       <MediaModal
         item={selectedItem}
